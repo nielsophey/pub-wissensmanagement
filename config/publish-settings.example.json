@@ -1,0 +1,18 @@
+{
+  "platform": "github",
+  "github": {
+    "token": "",
+    "owner": "your-org",
+    "repo": "wiki-repo",
+    "branch": "main",
+    "labels": ["wiki-todo"]
+  },
+  "azureDevops": {
+    "token": "",
+    "organization": "your-org",
+    "project": "your-project",
+    "wikiId": "",
+    "workItemType": "Task",
+    "areaPath": ""
+  }
+}

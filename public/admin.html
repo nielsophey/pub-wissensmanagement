@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wissenmanagement - Administration</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-brand">📚 Wissenmanagement</a>
+    <ul class="nav-links">
+      <li><a href="/">Durchlauf</a></li>
+      <li><a href="/admin" class="active">Administration</a></li>
+      <li><a href="/files">Dateiverwaltung</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <h1 class="page-title">Administration</h1>
+
+    <div class="admin-layout">
+      <!-- Wiki-Einstellungen -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Wiki-Konfiguration (Markdown)</span>
+          <button class="btn btn-sm btn-primary" id="btn-save-wiki">Speichern</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <textarea id="wiki-settings" placeholder="Wiki-Konfiguration im Markdown-Format..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- KI-Einstellungen -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>KI-Modell Einstellungen</span>
+          <button class="btn btn-sm btn-primary" id="btn-save-ai">Speichern</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="ai-provider">Provider</label>
+            <select id="ai-provider" style="width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:6px; font-size:0.9rem;">
+              <option value="openai">Azure OpenAI (GPT-4o, GPT-4, ...)</option>
+              <option value="inference">Azure AI Inference (Claude, Mistral, Llama, ...)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ai-endpoint">Endpoint</label>
+            <input type="url" id="ai-endpoint" placeholder="https://your-resource.openai.azure.com">
+            <small id="endpoint-hint" style="color:var(--text-muted); font-size:0.75rem;"></small>
+          </div>
+          <div class="form-group">
+            <label for="ai-auth-method">Authentifizierung</label>
+            <select id="ai-auth-method" style="width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:6px; font-size:0.9rem;">
+              <option value="apiKey">API Key</option>
+              <option value="managedIdentity">Managed Identity (Azure Deployment)</option>
+            </select>
+          </div>
+          <div class="form-group" id="apikey-group">
+            <label for="ai-apikey">API Key</label>
+            <input type="password" id="ai-apikey" placeholder="Neuen Schlüssel eingeben (leer lassen = bestehender bleibt erhalten)">
+            <small id="apikey-hint" style="color:var(--text-muted); font-size:0.75rem;"></small>
+          </div>
+          <div id="managed-identity-info" style="display:none; margin-bottom:1rem;">
+            <div style="background:#f0f4ff; border:1px solid #c7d4f0; border-radius:6px; padding:0.75rem 1rem; font-size:0.85rem;">
+              🔐 <strong>Managed Identity aktiv</strong><br>
+              Kein API Key erforderlich. Die App authentifiziert sich über die Azure Managed Identity.<br>
+              <span style="display:block; margin-top:0.4rem; color:#555;">Voraussetzung: System-assigned Identity im Azure Portal aktiviert
+              + Rolle <em>Cognitive Services OpenAI User</em> auf der KI-Ressource zugewiesen.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ai-deployment">Modell / Deployment Name</label>
+            <input type="text" id="ai-deployment" placeholder="gpt-4o">
+            <small id="model-hint" style="color:var(--text-muted); font-size:0.75rem;"></small>
+          </div>
+          <div class="form-group" id="api-version-group">
+            <label for="ai-version">API Version <span style="color:var(--text-muted)">(nur OpenAI)</span></label>
+            <input type="text" id="ai-version" placeholder="2024-08-01-preview" value="2024-08-01-preview">
+          </div>
+          <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+            <button class="btn btn-sm" id="btn-test-ai" style="background:#2563eb; color:#fff;">🔌 Verbindung testen</button>
+            <span id="ai-test-result" style="margin-left:0.75rem; font-size:0.85rem;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="font-size:1.2rem; margin:2rem 0 1rem;">Veröffentlichung & Aufgaben</h2>
+    <div class="admin-layout">
+      <!-- Publish-Plattform -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Plattform-Konfiguration</span>
+          <button class="btn btn-sm btn-primary" id="btn-save-publish">Speichern</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="pub-platform">Plattform</label>
+            <select id="pub-platform" style="width:100%; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:6px; font-size:0.9rem;">
+              <option value="github">GitHub</option>
+              <option value="azureDevops">Azure DevOps</option>
+            </select>
+          </div>
+
+          <!-- GitHub Felder -->
+          <div id="github-fields">
+            <div class="form-group">
+              <label for="gh-token">Personal Access Token</label>
+              <input type="password" id="gh-token" placeholder="ghp_...">
+              <small style="color:var(--text-muted); font-size:0.75rem;">Benötigt: repo Scope</small>
+            </div>
+            <div class="form-group">
+              <label for="gh-owner">Owner (User/Org)</label>
+              <input type="text" id="gh-owner" placeholder="meine-org">
+            </div>
+            <div class="form-group">
+              <label for="gh-repo">Repository</label>
+              <input type="text" id="gh-repo" placeholder="wiki-repo">
+            </div>
+            <div class="form-group">
+              <label for="gh-branch">Branch</label>
+              <input type="text" id="gh-branch" placeholder="main" value="main">
+            </div>
+            <div class="form-group">
+              <label for="gh-labels">Issue-Labels <span style="color:var(--text-muted)">(kommagetrennt)</span></label>
+              <input type="text" id="gh-labels" placeholder="wiki-todo" value="wiki-todo">
+            </div>
+          </div>
+
+          <!-- Azure DevOps Felder -->
+          <div id="azdo-fields" style="display:none">
+            <div class="form-group">
+              <label for="azdo-token">Personal Access Token</label>
+              <input type="password" id="azdo-token" placeholder="PAT...">
+              <small style="color:var(--text-muted); font-size:0.75rem;">Benötigt: Wiki Read&Write, Work Items Read&Write</small>
+            </div>
+            <div class="form-group">
+              <label for="azdo-org">Organization</label>
+              <input type="text" id="azdo-org" placeholder="meine-org">
+            </div>
+            <div class="form-group">
+              <label for="azdo-project">Project</label>
+              <input type="text" id="azdo-project" placeholder="mein-projekt">
+            </div>
+            <div class="form-group">
+              <label for="azdo-wikiid">Wiki-ID <span style="color:var(--text-muted)">(optional)</span></label>
+              <input type="text" id="azdo-wikiid" placeholder="projekt.wiki">
+              <small style="color:var(--text-muted); font-size:0.75rem;">Standard: {project}.wiki</small>
+            </div>
+            <div class="form-group">
+              <label for="azdo-workitem">Work Item Typ</label>
+              <input type="text" id="azdo-workitem" placeholder="Task" value="Task">
+            </div>
+            <div class="form-group">
+              <label for="azdo-area">Area Path <span style="color:var(--text-muted)">(optional)</span></label>
+              <input type="text" id="azdo-area" placeholder="Projekt\\Team">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info-Panel -->
+      <div class="panel">
+        <div class="panel-header"><span>So funktioniert es</span></div>
+        <div class="panel-body" style="font-size:0.9rem; line-height:1.8;">
+          <h3 style="font-size:1rem; margin-bottom:0.75rem;">Wiki veröffentlichen</h3>
+          <p>Nach der Wiki-Generierung kann das Ergebnis direkt auf der konfigurierten Plattform veröffentlicht werden:</p>
+          <ul style="padding-left:1.25rem; margin:0.5rem 0;">
+            <li><strong>GitHub:</strong> Markdown-Dateien werden per API ins Repository gepusht</li>
+            <li><strong>Azure DevOps:</strong> Seiten werden im Projekt-Wiki angelegt/aktualisiert</li>
+          </ul>
+
+          <h3 style="font-size:1rem; margin:1.5rem 0 0.75rem;">Aufgaben aus TODOs</h3>
+          <p>In den Wiki-Artikeln erkannte TODOs werden automatisch als Aufgaben erstellt:</p>
+          <ul style="padding-left:1.25rem; margin:0.5rem 0;">
+            <li><code>- [ ] Aufgabentext</code> → Checkbox-Syntax</li>
+            <li><code>TODO: Aufgabentext</code> → Inline-Marker</li>
+          </ul>
+          <p style="margin-top:0.5rem;">
+            <strong>GitHub:</strong> Issues mit konfigurierten Labels<br>
+            <strong>Azure DevOps:</strong> Work Items (Task, Bug, etc.)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Wiki-Einstellungen laden
+    async function loadWikiSettings() {
+      const res = await fetch('/api/config/wiki-settings');
+      const data = await res.json();
+      document.getElementById('wiki-settings').value = data.content || '';
+    }
+
+    // AI-Einstellungen laden
+    async function loadAiSettings() {
+      const res = await fetch('/api/config/ai-settings');
+      const data = await res.json();
+      document.getElementById('ai-provider').value = data.provider || 'openai';
+      document.getElementById('ai-endpoint').value = data.endpoint || '';
+      document.getElementById('ai-deployment').value = data.deployment || 'gpt-4o';
+      document.getElementById('ai-version').value = data.apiVersion || '2024-08-01-preview';
+      document.getElementById('ai-auth-method').value = data.useManagedIdentity ? 'managedIdentity' : 'apiKey';
+      document.getElementById('apikey-hint').textContent = data.apiKey
+        ? 'Ein API Key ist gespeichert – Feld leer lassen, um ihn beizubehalten.'
+        : '';
+      updateProviderHints();
+      updateAuthMethod();
+    }
+
+    // Provider-Hinweise aktualisieren
+    function updateProviderHints() {
+      const provider = document.getElementById('ai-provider').value;
+      const endpointHint = document.getElementById('endpoint-hint');
+      const modelHint = document.getElementById('model-hint');
+      const versionGroup = document.getElementById('api-version-group');
+
+      if (provider === 'inference') {
+        endpointHint.textContent = 'z.B. https://your-model.region.models.ai.azure.com';
+        modelHint.textContent = 'z.B. claude-3-5-sonnet, mistral-large, llama-3-70b';
+        versionGroup.style.display = 'none';
+      } else {
+        endpointHint.textContent = 'z.B. https://your-resource.openai.azure.com';
+        modelHint.textContent = 'z.B. gpt-4o, gpt-4, gpt-35-turbo';
+        versionGroup.style.display = 'block';
+      }
+    }
+
+    document.getElementById('ai-provider').addEventListener('change', updateProviderHints);
+
+    function updateAuthMethod() {
+      const method = document.getElementById('ai-auth-method').value;
+      document.getElementById('apikey-group').style.display = method === 'apiKey' ? 'block' : 'none';
+      document.getElementById('managed-identity-info').style.display = method === 'managedIdentity' ? 'block' : 'none';
+    }
+    document.getElementById('ai-auth-method').addEventListener('change', updateAuthMethod);
+
+    // Wiki-Einstellungen speichern
+    document.getElementById('btn-save-wiki').addEventListener('click', async () => {
+      const content = document.getElementById('wiki-settings').value;
+      const res = await fetch('/api/config/wiki-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      if (res.ok) showToast('Wiki-Einstellungen gespeichert', 'success');
+      else showToast('Fehler beim Speichern', 'error');
+    });
+
+    // AI-Einstellungen speichern
+    document.getElementById('btn-save-ai').addEventListener('click', async () => {
+      const authMethod = document.getElementById('ai-auth-method').value;
+      const data = {
+        provider: document.getElementById('ai-provider').value,
+        endpoint: document.getElementById('ai-endpoint').value,
+        deployment: document.getElementById('ai-deployment').value,
+        apiVersion: document.getElementById('ai-version').value,
+        useManagedIdentity: authMethod === 'managedIdentity'
+      };
+      if (authMethod === 'apiKey') {
+        const keyVal = document.getElementById('ai-apikey').value;
+        if (keyVal) data.apiKey = keyVal;
+      }
+      const res = await fetch('/api/config/ai-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) showToast('KI-Einstellungen gespeichert', 'success');
+      else showToast('Fehler beim Speichern', 'error');
+    });
+
+    function showToast(msg, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    loadWikiSettings();
+    loadAiSettings();
+    loadPublishSettings();
+
+    // ===== KI-Verbindungstest =====
+    document.getElementById('btn-test-ai').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-test-ai');
+      const result = document.getElementById('ai-test-result');
+      btn.disabled = true;
+      btn.textContent = '⏳ Teste...';
+      result.textContent = '';
+      result.style.color = '';
+      try {
+        const res = await fetch('/api/config/ai-test', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          result.textContent = '✅ ' + (data.message || 'Verbindung erfolgreich');
+          result.style.color = '#16a34a';
+        } else {
+          result.textContent = '❌ ' + (data.error || 'Unbekannter Fehler');
+          result.style.color = '#dc2626';
+        }
+      } catch (err) {
+        result.textContent = '❌ Netzwerkfehler: ' + err.message;
+        result.style.color = '#dc2626';
+      }
+      btn.disabled = false;
+      btn.textContent = '🔌 Verbindung testen';
+    });
+
+    // ===== Publish-Plattform =====
+
+    function updatePlatformFields() {
+      const platform = document.getElementById('pub-platform').value;
+      document.getElementById('github-fields').style.display = platform === 'github' ? 'block' : 'none';
+      document.getElementById('azdo-fields').style.display = platform === 'azureDevops' ? 'block' : 'none';
+    }
+
+    document.getElementById('pub-platform').addEventListener('change', updatePlatformFields);
+
+    async function loadPublishSettings() {
+      const res = await fetch('/api/config/publish-settings');
+      const data = await res.json();
+      document.getElementById('pub-platform').value = data.platform || 'github';
+
+      if (data.github) {
+        document.getElementById('gh-owner').value = data.github.owner || '';
+        document.getElementById('gh-repo').value = data.github.repo || '';
+        document.getElementById('gh-branch').value = data.github.branch || 'main';
+        document.getElementById('gh-labels').value = (data.github.labels || ['wiki-todo']).join(', ');
+      }
+      if (data.azureDevops) {
+        document.getElementById('azdo-org').value = data.azureDevops.organization || '';
+        document.getElementById('azdo-project').value = data.azureDevops.project || '';
+        document.getElementById('azdo-wikiid').value = data.azureDevops.wikiId || '';
+        document.getElementById('azdo-workitem').value = data.azureDevops.workItemType || 'Task';
+        document.getElementById('azdo-area').value = data.azureDevops.areaPath || '';
+      }
+      updatePlatformFields();
+    }
+
+    document.getElementById('btn-save-publish').addEventListener('click', async () => {
+      const platform = document.getElementById('pub-platform').value;
+      const settings = { platform };
+
+      if (platform === 'github') {
+        settings.github = {
+          token: document.getElementById('gh-token').value,
+          owner: document.getElementById('gh-owner').value,
+          repo: document.getElementById('gh-repo').value,
+          branch: document.getElementById('gh-branch').value || 'main',
+          labels: document.getElementById('gh-labels').value.split(',').map(l => l.trim()).filter(Boolean)
+        };
+      } else {
+        settings.azureDevops = {
+          token: document.getElementById('azdo-token').value,
+          organization: document.getElementById('azdo-org').value,
+          project: document.getElementById('azdo-project').value,
+          wikiId: document.getElementById('azdo-wikiid').value,
+          workItemType: document.getElementById('azdo-workitem').value || 'Task',
+          areaPath: document.getElementById('azdo-area').value
+        };
+      }
+
+      const res = await fetch('/api/config/publish-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      if (res.ok) showToast('Publish-Einstellungen gespeichert', 'success');
+      else showToast('Fehler beim Speichern', 'error');
+    });
+  </script>
+</body>
+</html>

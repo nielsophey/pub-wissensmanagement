@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wissenmanagement - Durchlauf</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-brand">📚 Wissenmanagement</a>
+    <ul class="nav-links">
+      <li><a href="/" class="active">Durchlauf</a></li>
+      <li><a href="/admin">Administration</a></li>
+      <li><a href="/files">Dateiverwaltung</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h1 class="page-title" style="margin-bottom:0">Neuer Durchlauf</h1>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <select id="run-select" style="padding:0.4rem 0.75rem; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; min-width:200px;">
+          <option value="">— Durchlauf wählen —</option>
+        </select>
+        <button class="btn btn-outline" id="btn-load-run" disabled>Laden</button>
+        <button class="btn btn-primary" id="btn-new-run">+ Neuer Durchlauf</button>
+      </div>
+    </div>
+
+    <div class="run-layout">
+      <!-- Linke Spalte: Datei-Upload -->
+      <div class="panel">
+        <div class="panel-header">Quelldateien</div>
+        <div class="panel-body">
+          <div class="upload-zone" id="upload-zone">
+            <div class="icon">📁</div>
+            <p>Dateien hierher ziehen<br>oder klicken zum Auswählen</p>
+            <p style="font-size:0.75rem; margin-top:0.5rem">ZIP, TXT, MD, DOCX, PDF, JSON, ...</p>
+            <input type="file" id="file-input" multiple hidden>
+          </div>
+          <ul class="file-list" id="file-list"></ul>
+        </div>
+      </div>
+
+      <!-- Mittlere Spalte: KI-Interaktion -->
+      <div class="panel">
+        <div class="panel-header">KI-Interaktion</div>
+        <div class="panel-body">
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg system">
+              Erstelle einen neuen Durchlauf und lade Dateien hoch, um zu beginnen.
+            </div>
+          </div>
+        </div>
+        <div class="chat-actions">
+          <button class="btn btn-primary" id="btn-suggest" disabled>Struktur vorschlagen</button>
+          <button class="btn btn-success" id="btn-generate" disabled>Wiki generieren</button>
+        </div>
+        <div id="refine-bar" style="display:none; padding:0.75rem 1.25rem; border-top:1px solid var(--border); display:none;">
+          <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+            <textarea id="refine-input" rows="5" placeholder="z.B. 'Füge eine Seite für FAQ hinzu' oder 'Entferne die index.md'" style="flex:1; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; resize:vertical;"></textarea>
+            <button class="btn btn-primary btn-sm" id="btn-refine">Anpassen</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rechte Spalte: Output -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Wiki-Output</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-sm btn-outline" id="btn-preview-toggle" disabled>Preview</button>
+            <button class="btn btn-sm btn-primary" id="btn-download" disabled>⬇ Download</button>
+            <button class="btn btn-sm btn-success" id="btn-publish" disabled>🚀 Publizieren</button>
+            <button class="btn btn-sm btn-outline" id="btn-publish-todos" disabled>📋 TODOs anlegen</button>
+          </div>
+        </div>
+        <div class="panel-body" id="output-panel">
+          <div class="chat-msg system">Noch kein Wiki generiert.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

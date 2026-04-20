@@ -1,0 +1,12 @@
+node_modules/
+.env
+data/runs/*/
+# azd Umgebungsstatus (enthält Subscription-IDs, Resource-Namen etc.)
+.azure/
+
+# Sensible Konfigurationsdateien
+config/ai-settings.json
+config/publish-settings.json
+
+# Kompilierte Bicep-Artefakte
+infra/main.json

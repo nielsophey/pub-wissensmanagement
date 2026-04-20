@@ -1,0 +1,12 @@
+# Azure Developer CLI (azd) Konfiguration
+# Dokumentation: https://aka.ms/azd
+name: wissenmanagement
+metadata:
+  template: wissenmanagement@0.0.1
+
+services:
+  web:
+    project: .
+    host: appservice
+    language: js
+    dist: .

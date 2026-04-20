@@ -1,0 +1,8 @@
+{
+  "provider": "openai",
+  "endpoint": "https://your-resource.openai.azure.com/",
+  "apiKey": "",
+  "deployment": "gpt-4o",
+  "apiVersion": "2024-08-01-preview",
+  "useManagedIdentity": false
+}
